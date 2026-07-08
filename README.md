@@ -21,6 +21,12 @@ GlobePulse is a Streamlit-based app for tracking business and market-moving news
    ```bash
    pip install -r requirements.txt
    ```
+3. Copy .env.example to .env in root folder:
+   ```bash
+   cp .env.example .env
+   ```
+   Replace the value of keys in .env with your own values.
+
 4. Run the app:
    ```bash
    streamlit run app.py
