@@ -1,25 +1,24 @@
-import pandas as pd
-import streamlit as st
-import streamlit.components.v1 as components
-from streamlit.components.v1 import html
-import time
-# from databricks import sql
-import numpy as np
-from collections import defaultdict
-from streamlit_lightweight_charts import renderLightweightCharts
-from yahooquery import Ticker
-import datetime
-from embedchain import App
-from embedchain.config import BaseLlmConfig
-import os
-import functions
-from yahooquery import search
-import json
-import requests
-from streamlit_option_menu import option_menu
 import base64
+from collections import defaultdict
+import datetime
+import json
+import os
+import time
 
 from dotenv import load_dotenv
+from embedchain import App
+from embedchain.config import BaseLlmConfig
+import numpy as np
+import pandas as pd
+import requests
+import streamlit as st
+from streamlit.components.v1 import html
+from streamlit_lightweight_charts import renderLightweightCharts
+from streamlit_option_menu import option_menu
+from yahooquery import search, Ticker
+
+import functions
+import pipeline
 
 load_dotenv()
 
@@ -217,7 +216,6 @@ else:
         if st.button("🔄 Run Ingestion Pipeline"):
             with st.spinner("Scraping news & generating sentiments..."):
                 try:
-                    import pipeline
                     pipeline.run_pipeline()
                     st.success("Ingestion complete!")
                     st.rerun()
