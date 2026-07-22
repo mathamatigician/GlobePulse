@@ -6,9 +6,17 @@ import { API_URL } from '../config';
 
 interface SectorHeatmapProps {
   heatmapData: any[];
+  watchlist?: string[];
+  selectedTicker?: string;
+  onSelectTicker?: (ticker: string) => void;
 }
 
-export function SectorHeatmap({ heatmapData }: SectorHeatmapProps) {
+export function SectorHeatmap({ 
+  heatmapData, 
+  watchlist = [], 
+  selectedTicker = 'ALL', 
+  onSelectTicker 
+}: SectorHeatmapProps) {
   // Define our actual backend parsed topic categories
   const topics = useMemo(() => [
     "Layoffs",
@@ -42,9 +50,34 @@ export function SectorHeatmap({ heatmapData }: SectorHeatmapProps) {
     }).sort((a, b) => b.score - a.score);
   }, [heatmapData, topics]);
 
+  const displayTickers = useMemo(() => {
+    if (watchlist && watchlist.length > 0) return watchlist;
+    return ["TSLA", "AAPL", "GOOG", "MSFT", "NVDA", "AMZN", "INTC", "META"];
+  }, [watchlist]);
+
   return (
     <div className="flex flex-col h-full">
-      <label className="text-[11px] uppercase tracking-[0.4em] dark:text-white/40 text-slate-500 block mb-6">Topic Distribution</label>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+        <label className="text-[11px] uppercase tracking-[0.4em] dark:text-white/40 text-slate-500 block">
+          Topic Distribution
+        </label>
+
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-mono uppercase dark:text-white/40 text-slate-500">Filter:</span>
+          <select
+            value={selectedTicker}
+            onChange={(e) => onSelectTicker?.(e.target.value)}
+            className="text-xs font-mono font-bold px-2.5 py-1 rounded-lg border dark:border-white/10 border-slate-200 dark:bg-[#121214] bg-white dark:text-white text-slate-900 focus:outline-none focus:border-emerald-500 cursor-pointer shadow-sm"
+          >
+            <option value="ALL">All Watchlist Items ({displayTickers.length})</option>
+            {displayTickers.map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
       
       <div className="space-y-6">
         {topicDistributions.map((topic) => {

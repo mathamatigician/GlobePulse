@@ -39,6 +39,7 @@ export function Dashboard({ email }: DashboardProps) {
 
   const [dashboardTab, setDashboardTab] = useState<'sentiment' | 'charts'>('sentiment');
   const [selectedChartTicker, setSelectedChartTicker] = useState<string>('');
+  const [selectedHeatmapTicker, setSelectedHeatmapTicker] = useState<string>('ALL');
 
   useEffect(() => {
     if (watchlist.length > 0 && !selectedChartTicker) {
@@ -65,7 +66,10 @@ export function Dashboard({ email }: DashboardProps) {
       }
 
       // 3. Fetch Heatmap
-      const hmRes = await fetch(`${API_URL}/api/sentiment/heatmap?email=${encodeURIComponent(email)}`);
+      const hmUrl = selectedHeatmapTicker && selectedHeatmapTicker !== 'ALL'
+        ? `${API_URL}/api/sentiment/heatmap?email=${encodeURIComponent(email)}&ticker=${encodeURIComponent(selectedHeatmapTicker)}`
+        : `${API_URL}/api/sentiment/heatmap?email=${encodeURIComponent(email)}`;
+      const hmRes = await fetch(hmUrl);
       if (hmRes.ok) {
         const hmData = await hmRes.json();
         setHeatmapData(hmData || []);
@@ -131,6 +135,12 @@ export function Dashboard({ email }: DashboardProps) {
     const interval = setInterval(() => fetchData(true), 60000);
     return () => clearInterval(interval);
   }, [email]);
+
+  useEffect(() => {
+    if (!loading) {
+      fetchData(true);
+    }
+  }, [selectedHeatmapTicker]);
 
   // Handle Watchlist Updates (Star / Add Ticker)
   const handleWatchlistChange = async (newWatchlist: string[]) => {
@@ -286,7 +296,12 @@ export function Dashboard({ email }: DashboardProps) {
           </div>
           
           <div className="col-span-12 lg:col-span-5 flex flex-col gap-4 border-t lg:border-t-0 lg:border-l dark:border-white/10 border-slate-200 pt-8 lg:pt-0 lg:pl-6">
-            <SectorHeatmap heatmapData={heatmapData} />
+            <SectorHeatmap 
+              heatmapData={heatmapData} 
+              watchlist={watchlist}
+              selectedTicker={selectedHeatmapTicker}
+              onSelectTicker={setSelectedHeatmapTicker}
+            />
           </div>
         </div>
       ) : (
