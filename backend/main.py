@@ -157,7 +157,7 @@ def get_heatmap(email: str = Query(...), ticker: Optional[str] = Query(None)):
     
     # Filter by specific ticker if provided and not 'ALL'
     if ticker and ticker.strip().upper() != "ALL":
-        watchlist = [t for t in watchlist if t.upper() == ticker.strip().upper()]
+        watchlist = [t for t in watchlist if t.upper() == ticker.strip().title()]
         if not watchlist:
             watchlist = [ticker.strip().upper()]
 
