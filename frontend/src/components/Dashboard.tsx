@@ -134,13 +134,7 @@ export function Dashboard({ email }: DashboardProps) {
     // Poll every 60 seconds
     const interval = setInterval(() => fetchData(true), 60000);
     return () => clearInterval(interval);
-  }, [email]);
-
-  useEffect(() => {
-    if (!loading) {
-      fetchData(true);
-    }
-  }, [selectedHeatmapTicker]);
+  }, [email, selectedHeatmapTicker]);
 
   // Handle Watchlist Updates (Star / Add Ticker)
   const handleWatchlistChange = async (newWatchlist: string[]) => {
