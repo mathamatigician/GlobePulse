@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import type { Stock } from '../types';
 import { OverallSentiment } from './OverallSentiment';
 import { SectorHeatmap, TopStocks } from './DataWidgets';
@@ -47,6 +47,22 @@ export function Dashboard({ email }: DashboardProps) {
     }
   }, [watchlist, selectedChartTicker]);
 
+  // Dedicated Heatmap Fetcher
+  const fetchHeatmap = useCallback(async () => {
+    try {
+      const hmUrl = selectedHeatmapTicker && selectedHeatmapTicker !== 'ALL'
+        ? `${API_URL}/api/sentiment/heatmap?email=${encodeURIComponent(email)}&ticker=${encodeURIComponent(selectedHeatmapTicker)}`
+        : `${API_URL}/api/sentiment/heatmap?email=${encodeURIComponent(email)}`;
+      const hmRes = await fetch(hmUrl);
+      if (hmRes.ok) {
+        const hmData = await hmRes.json();
+        setHeatmapData(hmData || []);
+      }
+    } catch (e) {
+      console.error("Failed to fetch heatmap", e);
+    }
+  }, [email, selectedHeatmapTicker]);
+
   // Fetch watchlist, alerts, heatmap, and Yahoo Finance details
   const fetchData = async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -66,14 +82,7 @@ export function Dashboard({ email }: DashboardProps) {
       }
 
       // 3. Fetch Heatmap
-      const hmUrl = selectedHeatmapTicker && selectedHeatmapTicker !== 'ALL'
-        ? `${API_URL}/api/sentiment/heatmap?email=${encodeURIComponent(email)}&ticker=${encodeURIComponent(selectedHeatmapTicker)}`
-        : `${API_URL}/api/sentiment/heatmap?email=${encodeURIComponent(email)}`;
-      const hmRes = await fetch(hmUrl);
-      if (hmRes.ok) {
-        const hmData = await hmRes.json();
-        setHeatmapData(hmData || []);
-      }
+      await fetchHeatmap();
 
       // 4. Fetch Stock history summaries
       const stockSummaries: Stock[] = [];
@@ -129,12 +138,17 @@ export function Dashboard({ email }: DashboardProps) {
     }
   };
 
+  // Full dashboard polling every 60 seconds
   useEffect(() => {
     fetchData();
-    // Poll every 60 seconds
     const interval = setInterval(() => fetchData(true), 60000);
     return () => clearInterval(interval);
-  }, [email, selectedHeatmapTicker]);
+  }, [email]);
+
+  // Refetch heatmap when filter dropdown changes
+  useEffect(() => {
+    fetchHeatmap();
+  }, [fetchHeatmap]);
 
   // Handle Watchlist Updates (Star / Add Ticker)
   const handleWatchlistChange = async (newWatchlist: string[]) => {
