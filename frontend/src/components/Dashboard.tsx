@@ -81,8 +81,8 @@ export function Dashboard({ email }: DashboardProps) {
         setAlerts(alData || []);
       }
 
-      // 3. Fetch Heatmap
-      await fetchHeatmap();
+      // 3. Heatmap is owned by its own polling effect (keyed on the selected
+      //    ticker), so it is deliberately not fetched here.
 
       // 4. Fetch Stock history summaries
       const stockSummaries: Stock[] = [];
@@ -145,9 +145,13 @@ export function Dashboard({ email }: DashboardProps) {
     return () => clearInterval(interval);
   }, [email]);
 
-  // Refetch heatmap when filter dropdown changes
+  // Heatmap load + 60s poll. Keyed on fetchHeatmap, which is memoized on the
+  // selected ticker, so the interval re-binds whenever the filter changes and
+  // always refreshes the currently selected ticker.
   useEffect(() => {
     fetchHeatmap();
+    const heatmapInterval = setInterval(fetchHeatmap, 60000);
+    return () => clearInterval(heatmapInterval);
   }, [fetchHeatmap]);
 
   // Handle Watchlist Updates (Star / Add Ticker)

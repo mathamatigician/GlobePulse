@@ -155,11 +155,12 @@ def get_heatmap(email: str = Query(...), ticker: Optional[str] = Query(None)):
     watchlist_str = users[email_key].get("watchlist", "")
     watchlist = [t.strip() for t in watchlist_str.split(",") if t.strip()]
     
-    # Filter by specific ticker if provided and not 'ALL'
+    # Filter by specific ticker if provided and not 'ALL'.
+    # An unmatched ticker leaves the watchlist empty, which keeps the response
+    # scoped to the user's own watchlist (falls through to the `not allowed` guard).
     if ticker and ticker.strip().upper() != "ALL":
-        watchlist = [t for t in watchlist if t.upper() == ticker.strip().title()]
-        if not watchlist:
-            watchlist = [ticker.strip().upper()]
+        target = ticker.strip().upper()
+        watchlist = [t for t in watchlist if t.upper() == target]
 
     # Compile allowed companies & tickers
     allowed = set()
